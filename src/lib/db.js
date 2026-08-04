@@ -98,6 +98,18 @@ export async function contarPendientes() {
   return (await obtenerPendientes()).length
 }
 
+// Borra TODO lo local: padrón, cola y configuración. Se usa para
+// reiniciar un dispositivo de demostración y para el borrado obligatorio
+// de datos personales al cierre del evento.
+export async function restablecerDispositivo() {
+  const db = await abrirDb()
+  const tx = db.transaction(['padron', 'cola', 'meta'], 'readwrite')
+  tx.objectStore('padron').clear()
+  tx.objectStore('cola').clear()
+  tx.objectStore('meta').clear()
+  await tx.done
+}
+
 export async function marcarSincronizados(idsLocales) {
   const db = await abrirDb()
   const tx = db.transaction('cola', 'readwrite')

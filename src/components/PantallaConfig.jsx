@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { escribirMeta, leerMeta, guardarPadron } from '../lib/db'
-import { IconDescarga } from './Iconos'
+import { escribirMeta, leerMeta, guardarPadron, contarPendientes, restablecerDispositivo } from '../lib/db'
+import { IconDescarga, IconAlerta } from './Iconos'
 
 const PUERTAS = ['1', '2', '3', '4', '5', '6', '7', '8']
 
@@ -20,7 +20,26 @@ export default function PantallaConfig({ config, padronInfo, alGuardar, primeraV
   const [clave, setClave] = useState(config?.clave || '')
   const [mensaje, setMensaje] = useState(null)
   const [descargando, setDescargando] = useState(false)
+  const [reset, setReset] = useState(null) // { pendientes } | null
+  const [borrando, setBorrando] = useState(false)
   const dispositivoId = useRef(config?.dispositivo_id || crypto.randomUUID())
+
+  async function pedirReset() {
+    setReset({ pendientes: await contarPendientes() })
+  }
+
+  async function ejecutarReset() {
+    setBorrando(true)
+    try {
+      await restablecerDispositivo()
+      window.location.hash = '#/config'
+      window.location.reload()
+    } catch {
+      setBorrando(false)
+      setReset(null)
+      setMensaje({ tipo: 'error', texto: 'No se pudo borrar. Cierra la app y vuelve a intentar.' })
+    }
+  }
 
   const listaParaOperar = puerta && operador.trim() && clave.trim() && padronInfo.count > 0
 
@@ -203,6 +222,60 @@ export default function PantallaConfig({ config, padronInfo, alGuardar, primeraV
         >
           Ir a la puerta →
         </a>
+      )}
+
+      <section className="bg-white rounded-2xl shadow border border-red-200 p-5 space-y-3">
+        <h2 className="text-xl font-black text-red-800">Zona de borrado</h2>
+        <p className="text-gray-600">
+          Borra el padrón, los registros y la configuración de <span className="font-bold">este dispositivo</span>.
+          Úsalo solo para reiniciar una demostración o al cierre del evento.
+        </p>
+        <button
+          type="button"
+          onClick={() => void pedirReset()}
+          className="w-full py-4 rounded-xl bg-white border-2 border-red-300 text-red-700 text-xl font-black active:scale-[0.98] transition"
+        >
+          Restablecer este dispositivo
+        </button>
+      </section>
+
+      {reset && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-t-8 border-red-500">
+            <div className="flex items-start gap-3">
+              <IconAlerta className="w-10 h-10 text-red-500 shrink-0" />
+              <div>
+                <p className="text-2xl font-black text-gray-900">¿Borrar todo?</p>
+                <p className="text-lg text-gray-700 mt-1">
+                  Se borrarán el padrón, la configuración y los registros guardados en este dispositivo.
+                </p>
+                {reset.pendientes > 0 && (
+                  <p className="text-lg font-black text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2 mt-3">
+                    ¡Hay {reset.pendientes} registro(s) SIN SINCRONIZAR que se perderán! Sincroniza primero.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="mt-6 grid gap-3">
+              <button
+                type="button"
+                onClick={() => void ejecutarReset()}
+                disabled={borrando}
+                className="w-full py-4 rounded-xl bg-red-600 text-white text-xl font-black active:scale-95 transition disabled:opacity-60"
+              >
+                {borrando ? 'Borrando…' : 'Sí, borrar todo'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setReset(null)}
+                disabled={borrando}
+                className="w-full py-4 rounded-xl bg-gray-100 text-gray-700 text-xl font-bold active:scale-95 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <p className="text-center text-xs text-gray-400 pt-2">

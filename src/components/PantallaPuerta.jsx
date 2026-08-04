@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { normalizarTexto, normalizarFolio, esFolioValido } from '../lib/normalizar'
 import { IconBuscar, IconFolio, IconQr, IconPalomita, IconAlerta } from './Iconos'
+import Escaner from './Escaner'
 
 const TABS = [
   { id: 'buscar', etiqueta: 'BUSCAR', Icono: IconBuscar },
@@ -64,7 +65,9 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
   const [duplicado, setDuplicado] = useState(null)
   const [alta, setAlta] = useState(null) // { nombre, telefono } | null
   const [guardando, setGuardando] = useState(false)
+  const [errorScan, setErrorScan] = useState(null)
   const timerConfirmacion = useRef(null)
+  const ultimoScan = useRef({ texto: '', t: 0 })
 
   // Búsqueda instantánea en memoria: 4 dígitos → tel_last4; si no, por nombre
   // (todos los tokens como substrings del nombre normalizado).
@@ -108,6 +111,33 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
       return
     }
     void confirmarRegistro(asistente, metodo, folioCapturado)
+  }
+
+  // QR leído: contenido esperado "PUE1:<FOLIO>:<firma>"; se acepta también un
+  // QR que traiga el folio a secas. La validación es contra el padrón local
+  // (la firma no se verifica en puerta, según el contrato del evento).
+  function manejarTextoQr(texto) {
+    const ahora = Date.now()
+    if (texto === ultimoScan.current.texto && ahora - ultimoScan.current.t < 3000) return
+    ultimoScan.current = { texto, t: ahora }
+
+    const partes = String(texto).trim().split(':')
+    const crudo = partes[0] === 'PUE1' && partes.length >= 2 ? partes[1] : texto
+    const f = normalizarFolio(crudo)
+    if (!esFolioValido(f)) {
+      navigator.vibrate?.([60, 60, 60])
+      setErrorScan({ titulo: 'Ese código no es un pase del evento', detalle: String(texto).slice(0, 60) })
+      return
+    }
+    const asistente = padron.find((a) => a.folio === f)
+    if (!asistente) {
+      navigator.vibrate?.([60, 60, 60])
+      setErrorScan({ titulo: `El folio ${f} no está en el padrón`, detalle: 'Verifica el pase o busca a la persona por nombre.' })
+      return
+    }
+    setErrorScan(null)
+    navigator.vibrate?.(80)
+    intentarRegistro(asistente, 'qr', f)
   }
 
   // Alta en sitio: persona que no aparece en el padrón. Se encola el check-in
@@ -246,17 +276,24 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
         </section>
       )}
 
-      {/* ---------- ESCANEAR (placeholder P1) ---------- */}
+      {/* ---------- ESCANEAR ---------- */}
       {tab === 'escanear' && (
-        <section className="px-3 pb-6">
-          <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 p-10 text-center">
-            <IconQr className="w-16 h-16 mx-auto text-gray-300" />
-            <p className="text-2xl font-black text-gray-700 mt-4">Escáner disponible el miércoles</p>
-            <p className="text-gray-500 text-lg mt-2">
-              Mientras tanto usa <span className="font-bold">BUSCAR</span> o{' '}
-              <span className="font-bold">FOLIO</span>.
-            </p>
-          </div>
+        <section className="px-3 pb-6 space-y-3">
+          <Escaner
+            pausado={Boolean(confirmacion || duplicado || alta)}
+            onTexto={manejarTextoQr}
+          />
+          {errorScan && (
+            <button
+              type="button"
+              onClick={() => setErrorScan(null)}
+              className="w-full text-left text-amber-900 bg-amber-50 border border-amber-300 rounded-2xl px-4 py-4"
+            >
+              <p className="text-xl font-black">{errorScan.titulo}</p>
+              <p className="text-lg mt-1 break-all">{errorScan.detalle}</p>
+              <p className="text-sm mt-2 text-amber-700">Toca para descartar este aviso.</p>
+            </button>
+          )}
         </section>
       )}
 

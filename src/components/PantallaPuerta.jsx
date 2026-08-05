@@ -212,7 +212,7 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
     }
     const tokens = normalizarTexto(q).split(' ').filter(Boolean)
     if (tokens.length === 0) return []
-    return padron.filter((a) => tokens.every((t) => a.nombre_norm.includes(t))).slice(0, 50)
+    return padron.filter((a) => tokens.every((t) => a.busqueda_norm.includes(t))).slice(0, 50)
   }, [consulta, padron])
 
   const folioOk = esFolioValido(folio)
@@ -337,13 +337,15 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
             autoFocus
             value={consulta}
             onChange={(e) => setConsulta(e.target.value)}
-            placeholder="Nombre o últimos 4 del teléfono"
+            placeholder="Nombre, procedencia o últimos 4 del tel."
             className="w-full text-2xl p-4 rounded-2xl border-2 border-gray-300 focus:border-brand-green focus:outline-none shadow-sm bg-white"
           />
           {!consulta.trim() && (
             <p className="text-gray-500 text-lg px-1">
-              Escribe el <span className="font-bold">nombre</span> de la persona, o los{' '}
-              <span className="font-bold">4 últimos dígitos</span> de su teléfono.
+              Escribe el <span className="font-bold">nombre</span>, la{' '}
+              <span className="font-bold">procedencia</span> (municipio, secretaría…) o los{' '}
+              <span className="font-bold">4 últimos dígitos</span> del teléfono. Puedes combinar:
+              "roque chicon".
             </p>
           )}
           {consulta.trim() && resultados.length === 0 && (

@@ -51,7 +51,17 @@ export default function App() {
       contarPendientes(),
     ])
     setPadronInfo({ version: version || null, count: count || 0, actualizado: actualizado || null })
-    setPadron(lista.map((a) => ({ ...a, nombre_norm: normalizarTexto(a.nombre) })))
+    // Índice de búsqueda: nombre + procedencia + folio en un solo texto
+    // normalizado, para encontrar por cualquiera de esos datos.
+    setPadron(
+      lista.map((a) => ({
+        ...a,
+        nombre_norm: normalizarTexto(a.nombre),
+        busqueda_norm: normalizarTexto(
+          [a.nombre, a.procedencia, a.folio].filter(Boolean).join(' '),
+        ),
+      })),
+    )
     setPendientes(numPendientes)
     setCargado(true)
   }, [])

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { IconSync, IconAlerta } from './Iconos'
+import { descargarExcel, descargarPdf } from '../lib/reporte'
+import { IconSync, IconAlerta, IconDescarga } from './Iconos'
 
 // Tablero de control para proyector / pantalla del coordinador.
 // Consulta evento_stats(p_clave) al montar y cada 30 segundos. Requiere red.
@@ -46,7 +47,32 @@ export default function Tablero({ claveConfig = '' }) {
   const [error, setError] = useState(null) // 'clave_invalida' | 'red' | null
   const [cargando, setCargando] = useState(false)
   const [verTodas, setVerTodas] = useState(false)
+  const [exportando, setExportando] = useState(null) // 'excel' | 'pdf' | null
+  const [errorExporte, setErrorExporte] = useState(null)
   const consultandoRef = useRef(false)
+
+  async function exportar(tipo) {
+    if (exportando) return
+    setExportando(tipo)
+    setErrorExporte(null)
+    try {
+      const { data, error: err } = await supabase.rpc('evento_reporte', { p_clave: clave })
+      if (err) throw new Error('No se pudo obtener el reporte. Revisa el internet e intenta de nuevo.')
+      if (!data?.ok) {
+        throw new Error(
+          data?.error === 'clave_invalida'
+            ? 'La clave del evento no es válida.'
+            : 'El servidor no pudo generar el reporte.',
+        )
+      }
+      if (tipo === 'excel') await descargarExcel(data)
+      else await descargarPdf(data)
+    } catch (e) {
+      setErrorExporte(e.message || 'No se pudo generar el archivo.')
+    } finally {
+      setExportando(null)
+    }
+  }
 
   const consultar = useCallback(async (k) => {
     if (!k || consultandoRef.current) return
@@ -226,6 +252,39 @@ export default function Tablero({ claveConfig = '' }) {
               <TarjetaCifra etiqueta="Acompañantes" valor={stats.acompanantes} />
               <TarjetaCifra etiqueta="Alta en sitio" valor={stats.alta_sitio} />
             </div>
+
+            {/* Descarga del reporte de asistentes */}
+            <section className="rounded-2xl bg-white border border-gray-200 shadow-sm p-4 sm:p-5">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2 className="text-lg font-black text-brand-dark flex-1">Reporte de asistentes</h2>
+                <button
+                  type="button"
+                  onClick={() => void exportar('excel')}
+                  disabled={Boolean(exportando)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-dark text-white font-bold active:scale-[0.98] transition disabled:opacity-50"
+                >
+                  <IconDescarga className="w-5 h-5" />
+                  {exportando === 'excel' ? 'Generando…' : 'Excel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void exportar('pdf')}
+                  disabled={Boolean(exportando)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border-2 border-brand-dark text-brand-dark font-bold active:scale-[0.98] transition disabled:opacity-50"
+                >
+                  <IconDescarga className="w-5 h-5" />
+                  {exportando === 'pdf' ? 'Generando…' : 'PDF con gráficas'}
+                </button>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                Detalle por asistente (invitado o representante, acompañantes, hora y puerta) y totales.
+              </p>
+              {errorExporte && (
+                <p className="mt-3 rounded-xl bg-red-50 border border-red-200 text-red-700 font-bold px-4 py-3">
+                  {errorExporte}
+                </p>
+              )}
+            </section>
 
             {/* Avance por procedencia: lista vertical, sin scroll horizontal */}
             {porProcedencia.length > 0 && (

@@ -69,6 +69,7 @@ function filasDetalle(reporte) {
     acompanantes_nombres: a.acompanantes_nombres || '',
     hora: horaCorta(a.timestamp_local),
     puerta: a.puerta || '',
+    operador: a.operador || '',
     metodo: a.llego ? ETIQUETAS_METODO[a.metodo] || a.metodo || '' : '',
     origen: a.origen === 'alta_sitio' ? 'Alta en sitio' : 'Padrón',
   }))
@@ -114,6 +115,7 @@ export async function descargarExcel(reporte) {
     'Nombres de acompañantes': f.acompanantes_nombres,
     Hora: f.hora,
     Puerta: f.puerta,
+    'Registró': f.operador,
     'Método': f.metodo,
     Origen: f.origen,
   }))
@@ -121,7 +123,7 @@ export async function descargarExcel(reporte) {
   hojaDetalle['!cols'] = [
     { wch: 5 }, { wch: 34 }, { wch: 20 }, { wch: 18 }, { wch: 10 },
     { wch: 14 }, { wch: 28 }, { wch: 12 }, { wch: 30 }, { wch: 8 },
-    { wch: 7 }, { wch: 12 }, { wch: 12 },
+    { wch: 7 }, { wch: 16 }, { wch: 12 }, { wch: 12 },
   ]
   XLSX.utils.book_append_sheet(wb, hojaDetalle, 'Asistentes')
 
@@ -245,8 +247,12 @@ export async function descargarPdf(reporte) {
     startY: null,
     pageBreak: 'always',
     margin: { left: M, right: M, top: 16 },
-    head: [['No.', 'Nombre', 'Procedencia', 'Estado', 'Quién llegó', 'Representante', 'Acomp.', 'Hora', 'Puerta']],
-    body: filas.map((f) => [f.no, f.nombre, f.procedencia, f.estado, f.quien, f.representante_nombre, f.acompanantes || '', f.hora, f.puerta]),
+    head: [['No.', 'Nombre', 'Procedencia', 'Estado', 'Quién llegó', 'Representante', 'Acomp.', 'Hora', 'Puerta · Registró']],
+    body: filas.map((f) => [
+      f.no, f.nombre, f.procedencia, f.estado, f.quien, f.representante_nombre,
+      f.acompanantes || '', f.hora,
+      f.puerta ? `${f.puerta}${f.operador ? ' · ' + f.operador : ''}` : '',
+    ]),
     styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 1.6, textColor: 50 },
     headStyles: { fillColor: VERDE_OSCURO, textColor: 255, fontStyle: 'bold', fontSize: 7.5 },
     alternateRowStyles: { fillColor: GRIS_CLARO },
@@ -256,7 +262,7 @@ export async function descargarPdf(reporte) {
       4: { cellWidth: 20 },
       6: { cellWidth: 13 },
       7: { cellWidth: 12 },
-      8: { cellWidth: 12 },
+      8: { cellWidth: 26 },
     },
     didParseCell: (data) => {
       if (data.section === 'body' && data.column.index === 3) {

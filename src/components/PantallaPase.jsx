@@ -86,17 +86,16 @@ export default function PantallaPase({ folio }) {
       {estado === 'ok' && datos && (
         <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden my-6">
           {/* Portada: mismo lenguaje que la Carpeta de Gira */}
-          <div className="bg-gradient-to-br from-vino to-vino-oscuro text-white px-6 pt-6 pb-5 text-left">
-            <p className="kicker text-sm">Pase de acceso</p>
+          <div className="bg-brand-dark text-white px-6 pt-6 pb-5 text-left">
+            <p className="kicker text-sm text-brand-gold">Pase de acceso</p>
             <h1 className="text-2xl font-black mt-1.5 leading-tight">{datos.evento_nombre}</h1>
             <p className="text-white/70 font-semibold mt-1">{datos.fecha_hora} · {datos.sede}</p>
           </div>
-          <div className="cenefa bg-vino-oscuro" />
 
           <div className="p-6 text-center">
             <p className="text-2xl font-extrabold text-gray-900 leading-tight">{datos.nombre}</p>
 
-            <div className="mx-auto mt-4 w-64 max-w-full rounded-2xl border border-oro/40 p-2 bg-white shadow-sm">
+            <div className="mx-auto mt-4 w-64 max-w-full rounded-2xl border border-gray-200 p-2 bg-white shadow-sm">
               {qr ? (
                 <img
                   src={qr}
@@ -108,8 +107,8 @@ export default function PantallaPase({ folio }) {
               )}
             </div>
 
-            <p className="kicker !text-oro-texto text-xs mt-4">Folio</p>
-            <p className="text-5xl font-black tracking-[0.2em] text-vino mt-1 select-all break-all">
+            <p className="kicker text-xs text-gray-400 mt-4">Folio</p>
+            <p className="text-5xl font-black tracking-[0.2em] text-brand-dark mt-1 select-all break-all">
               {datos.folio}
             </p>
             <p className="text-gray-500 text-sm mt-2">
@@ -121,11 +120,11 @@ export default function PantallaPase({ folio }) {
             )}
 
             <div className="mt-6 flex items-center justify-center gap-2.5">
-              <span className="w-10 h-px bg-oro/60" />
+              <span className="w-10 h-px bg-brand-gold/60" />
               <p className="text-[11px] text-gray-500 font-semibold uppercase tracking-widest">
                 Secretaría de Gobernación
               </p>
-              <span className="w-10 h-px bg-oro/60" />
+              <span className="w-10 h-px bg-brand-gold/60" />
             </div>
           </div>
         </div>

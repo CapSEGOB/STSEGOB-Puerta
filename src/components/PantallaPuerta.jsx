@@ -28,7 +28,7 @@ function TarjetaAsistente({ asistente, onRegistrar }) {
         </p>
         <div className="flex flex-wrap gap-1.5 mt-1.5">
           {asistente.procedencia && (
-            <span className="inline-block px-2.5 py-1 rounded-full bg-vino-tinte text-vino border border-vino-borde text-sm font-bold">
+            <span className="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-brand-teal border border-slate-200 text-sm font-bold">
               {asistente.procedencia}
             </span>
           )}
@@ -454,13 +454,13 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
             clearTimeout(timerConfirmacion.current)
             setConfirmacion(null)
           }}
-          className="fixed inset-0 z-50 bg-gradient-to-br from-vino to-vino-oscuro flex flex-col items-center justify-center p-8 text-white"
+          className="fixed inset-0 z-50 bg-brand-green flex flex-col items-center justify-center p-8 text-white"
         >
-          <span className="w-28 h-28 rounded-full bg-white/15 ring-4 ring-oro/60 flex items-center justify-center">
-            <IconPalomita className="w-20 h-20 text-oro-claro" />
+          <span className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center">
+            <IconPalomita className="w-20 h-20" />
           </span>
           <p className="text-4xl font-black text-center leading-tight mt-6">{confirmacion.nombre}</p>
-          <p className="kicker text-lg mt-3">Registrado a las {confirmacion.hora}</p>
+          <p className="text-2xl font-bold mt-3 text-white/90">Registrado a las {confirmacion.hora}</p>
           <p className="mt-10 text-white/70 text-lg">Toca la pantalla para continuar</p>
         </button>
       )}

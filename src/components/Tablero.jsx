@@ -151,13 +151,15 @@ export default function Tablero({ claveConfig = '' }) {
   const porProcedencia = [...(stats?.por_procedencia || [])].sort((a, b) => b.llegaron - a.llegaron)
 
   return (
-    <div className="min-h-screen bg-brand-dark text-white">
+    <div className="min-h-screen bg-vino-oscuro text-white">
+      <div className="cenefa" />
       <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-5">
         {/* Encabezado */}
         <header className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-3xl sm:text-4xl font-black flex-1">
-            Tablero del evento
-          </h1>
+          <div className="flex-1">
+            <p className="kicker text-xs sm:text-sm">Secretaría de Gobernación</p>
+            <h1 className="text-3xl sm:text-4xl font-black mt-0.5">Tablero del evento</h1>
+          </div>
           {stats?.actualizado && (
             <span className="px-3 py-2 rounded-lg bg-white/10 text-white/80 font-bold text-lg tabular-nums">
               Actualizado {horaSello(stats.actualizado)}
@@ -204,14 +206,12 @@ export default function Tablero({ claveConfig = '' }) {
         {stats && (
           <>
             {/* Cifra principal */}
-            <div className="rounded-3xl bg-brand-green text-white p-6 sm:p-8 text-center shadow-xl">
+            <div className="rounded-3xl bg-gradient-to-br from-vino to-vino-claro border border-oro/40 text-white p-6 sm:p-8 text-center shadow-xl">
               <p className="text-7xl sm:text-9xl font-black tabular-nums leading-none">
                 {stats.llegaron}
-                <span className="text-4xl sm:text-6xl text-white/70 font-black"> de {stats.total_padron}</span>
+                <span className="text-4xl sm:text-6xl text-oro-claro font-black"> de {stats.total_padron}</span>
               </p>
-              <p className="mt-3 text-2xl sm:text-3xl font-black uppercase tracking-wide text-white/90">
-                Llegaron
-              </p>
+              <p className="kicker mt-4 text-xl sm:text-2xl">Llegaron</p>
             </div>
 
             {/* Tarjetas secundarias */}
@@ -225,7 +225,7 @@ export default function Tablero({ claveConfig = '' }) {
             {/* Por procedencia */}
             {porProcedencia.length > 0 && (
               <section className="rounded-2xl bg-white/10 p-4 sm:p-5 overflow-x-auto">
-                <h2 className="text-xl sm:text-2xl font-black text-brand-gold mb-3">Por procedencia</h2>
+                <h2 className="kicker text-base sm:text-lg mb-3">Por procedencia</h2>
                 <table className="w-full text-left text-lg sm:text-xl">
                   <thead>
                     <tr className="text-white/60 uppercase text-sm sm:text-base tracking-wide">
@@ -257,7 +257,7 @@ export default function Tablero({ claveConfig = '' }) {
             <div className="grid sm:grid-cols-2 gap-4">
               {(stats.por_puerta || []).length > 0 && (
                 <section className="rounded-2xl bg-white/10 p-4 sm:p-5">
-                  <h2 className="text-xl font-black text-brand-gold mb-3">Por puerta</h2>
+                  <h2 className="kicker text-base mb-3">Por puerta</h2>
                   <div className="flex flex-wrap gap-2">
                     {stats.por_puerta.map((p) => (
                       <span
@@ -272,7 +272,7 @@ export default function Tablero({ claveConfig = '' }) {
               )}
               {(stats.por_metodo || []).length > 0 && (
                 <section className="rounded-2xl bg-white/10 p-4 sm:p-5">
-                  <h2 className="text-xl font-black text-brand-gold mb-3">Por método</h2>
+                  <h2 className="kicker text-base mb-3">Por método</h2>
                   <div className="flex flex-wrap gap-2">
                     {stats.por_metodo.map((m) => (
                       <span

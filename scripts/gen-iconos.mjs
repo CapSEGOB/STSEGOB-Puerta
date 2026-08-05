@@ -10,8 +10,8 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..')
 const PUBLIC = join(RAIZ, 'public')
 mkdirSync(PUBLIC, { recursive: true })
 
-const FONDO = [0x0e, 0x32, 0x2e] // #0e322e verde oscuro
-const ORO = [0xc7, 0x9c, 0x67]   // #c79c67 dorado
+const FONDO = [0x5a, 0x14, 0x29] // #5a1429 guinda oscuro institucional
+const ORO = [0xbd, 0x96, 0x47]   // #bd9647 oro de las Carpetas de Gira
 
 const TABLA_CRC = (() => {
   const t = new Int32Array(256)

@@ -2,10 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tipografía institucional (la misma de las Carpetas de Gira) */
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/fonts/Gilroy-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/fonts/Gilroy-SemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/fonts/Gilroy-ExtraBold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/fonts/Gilroy-Black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 html {
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  @apply bg-slate-100 text-gray-900 antialiased;
+  @apply bg-papel text-gray-900 antialiased;
+}
+
+@layer components {
+  /* Etiqueta dorada en mayúsculas — el "CARPETA DE GIRA" de la identidad */
+  .kicker {
+    @apply uppercase font-extrabold tracking-kicker text-oro-claro;
+  }
+
+  /* Cenefa: guiño al motivo de talavera del pie de las carpetas.
+     Rombos de oro tenues sobre el fondo en que se coloque. */
+  .cenefa {
+    height: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='8' viewBox='0 0 24 8'%3E%3Cpath d='M6 0L9 4L6 8L3 4Z' fill='%23bd9647' fill-opacity='0.55'/%3E%3Ccircle cx='16' cy='4' r='1.1' fill='%23bd9647' fill-opacity='0.4'/%3E%3Ccircle cx='21' cy='4' r='1.1' fill='%23bd9647' fill-opacity='0.4'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 24px 8px;
+  }
 }

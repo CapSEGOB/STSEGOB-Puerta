@@ -72,7 +72,7 @@ export default function Escaner({ pausado, onTexto }) {
       </div>
       {estado === 'listo' && !pausado && (
         <p className="text-gray-600 text-lg text-center">
-          Apunta al <span className="font-bold">QR del pase</span>. El registro es automático.
+          Apunta al <span className="font-bold">QR del pase</span> para abrir el registro.
         </p>
       )}
       {estado === 'error' && (

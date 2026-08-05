@@ -25,6 +25,9 @@ function TarjetaAsistente({ asistente, onRegistrar }) {
         <p className="text-xl font-bold text-gray-900 leading-tight">{asistente.nombre}</p>
         <p className="text-gray-500 font-medium mt-0.5">
           Tel. •••• {asistente.tel_last4 || '— — — —'} · Folio {asistente.folio}
+          {asistente.procedencia ? (
+            <span className="text-brand-teal font-bold"> · {asistente.procedencia}</span>
+          ) : null}
         </p>
         <div className="flex flex-wrap gap-1.5 mt-1.5">
           {ya ? (
@@ -57,13 +60,143 @@ function TarjetaAsistente({ asistente, onRegistrar }) {
   )
 }
 
+// Campos por default de los detalles del registro. Nada es obligatorio:
+// con estos valores, registrar sigue siendo un solo toque extra.
+const EXTRAS_INICIALES = {
+  representante: false,
+  representanteNombre: '',
+  acompanantes: 0,
+  acompanantesNombres: '',
+  mostrarNombres: false,
+}
+
+const MAX_ACOMPANANTES = 20
+
+// Convierte el estado del formulario a los campos EXACTOS del contrato.
+function extrasDeFormulario(f) {
+  const acomp =
+    Number.isInteger(f.acompanantes) && f.acompanantes > 0
+      ? Math.min(f.acompanantes, MAX_ACOMPANANTES)
+      : 0
+  return {
+    representante: f.representante === true,
+    representante_nombre: f.representante ? f.representanteNombre.trim() || null : null,
+    acompanantes: acomp,
+    acompanantes_nombres: acomp > 0 ? f.acompanantesNombres.trim() || null : null,
+  }
+}
+
+// Toggle "invitado / representante" + stepper de acompañantes. Se usa en el
+// panel de detalles y en el modal de alta en sitio (mismos campos en ambos).
+function CamposExtras({ valor, onCambiar }) {
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onCambiar((prev) => ({ ...prev, representante: false }))}
+          className={`py-4 px-2 rounded-xl text-base sm:text-lg font-black border-2 leading-tight transition ${
+            !valor.representante
+              ? 'bg-brand-green text-white border-brand-green shadow'
+              : 'bg-white text-gray-500 border-gray-300'
+          }`}
+        >
+          LLEGÓ EL INVITADO
+        </button>
+        <button
+          type="button"
+          onClick={() => onCambiar((prev) => ({ ...prev, representante: true }))}
+          className={`py-4 px-2 rounded-xl text-base sm:text-lg font-black border-2 leading-tight transition ${
+            valor.representante
+              ? 'bg-brand-teal text-white border-brand-teal shadow'
+              : 'bg-white text-gray-500 border-gray-300'
+          }`}
+        >
+          VIENE REPRESENTANTE
+        </button>
+      </div>
+
+      {valor.representante && (
+        <div>
+          <input
+            type="text"
+            value={valor.representanteNombre}
+            onChange={(e) => onCambiar((prev) => ({ ...prev, representanteNombre: e.target.value }))}
+            placeholder="Nombre del representante (opcional)"
+            autoCorrect="off"
+            spellCheck={false}
+            className="w-full text-xl p-4 rounded-xl border-2 border-gray-300 focus:border-brand-teal focus:outline-none"
+          />
+          <p className="text-sm text-gray-500 mt-1">Se puede completar después.</p>
+        </div>
+      )}
+
+      <div>
+        <p className="text-base font-bold text-gray-800 mb-2">Acompañantes</p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() =>
+              onCambiar((prev) => ({ ...prev, acompanantes: Math.max(0, prev.acompanantes - 1) }))
+            }
+            disabled={valor.acompanantes <= 0}
+            aria-label="Quitar un acompañante"
+            className="w-16 h-16 shrink-0 rounded-xl bg-gray-100 border-2 border-gray-300 text-4xl font-black text-gray-700 active:scale-95 transition disabled:opacity-40"
+          >
+            −
+          </button>
+          <span className="flex-1 text-center text-5xl font-black text-brand-dark tabular-nums">
+            {valor.acompanantes}
+          </span>
+          <button
+            type="button"
+            onClick={() =>
+              onCambiar((prev) => ({
+                ...prev,
+                acompanantes: Math.min(MAX_ACOMPANANTES, prev.acompanantes + 1),
+              }))
+            }
+            disabled={valor.acompanantes >= MAX_ACOMPANANTES}
+            aria-label="Agregar un acompañante"
+            className="w-16 h-16 shrink-0 rounded-xl bg-gray-100 border-2 border-gray-300 text-4xl font-black text-gray-700 active:scale-95 transition disabled:opacity-40"
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {valor.acompanantes > 0 && !valor.mostrarNombres && (
+        <button
+          type="button"
+          onClick={() => onCambiar((prev) => ({ ...prev, mostrarNombres: true }))}
+          className="text-brand-teal font-bold underline underline-offset-2"
+        >
+          Agregar nombres (opcional)
+        </button>
+      )}
+      {valor.acompanantes > 0 && valor.mostrarNombres && (
+        <textarea
+          value={valor.acompanantesNombres}
+          onChange={(e) => onCambiar((prev) => ({ ...prev, acompanantesNombres: e.target.value }))}
+          placeholder="Nombres de los acompañantes (opcional)"
+          rows={3}
+          autoCorrect="off"
+          spellCheck={false}
+          className="w-full text-lg p-3 rounded-xl border-2 border-gray-300 focus:border-brand-teal focus:outline-none"
+        />
+      )}
+    </div>
+  )
+}
+
 export default function PantallaPuerta({ padron, onRegistrar }) {
   const [tab, setTab] = useState('buscar')
   const [consulta, setConsulta] = useState('')
   const [folio, setFolio] = useState('')
   const [confirmacion, setConfirmacion] = useState(null)
   const [duplicado, setDuplicado] = useState(null)
-  const [alta, setAlta] = useState(null) // { nombre, telefono } | null
+  const [detalles, setDetalles] = useState(null) // { asistente, metodo, folioCapturado, ...EXTRAS_INICIALES } | null
+  const [alta, setAlta] = useState(null) // { nombre, telefono, ...EXTRAS_INICIALES } | null
   const [guardando, setGuardando] = useState(false)
   const [errorScan, setErrorScan] = useState(null)
   const timerConfirmacion = useRef(null)
@@ -88,11 +221,12 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
     [folioOk, folio, padron],
   )
 
-  async function confirmarRegistro(asistente, metodo, folioCapturado) {
+  async function confirmarRegistro(asistente, metodo, folioCapturado, extras = null) {
     if (guardando) return
     setGuardando(true)
     try {
-      const item = await onRegistrar(asistente, metodo, folioCapturado)
+      const item = await onRegistrar(asistente, metodo, folioCapturado, extras)
+      setDetalles(null)
       setDuplicado(null)
       setConsulta('')
       setFolio('')
@@ -104,13 +238,21 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
     }
   }
 
+  // Panel de detalles: se abre ANTES de registrar, desde cualquier modo
+  // (búsqueda, folio o escáner). Con los defaults, registrar es 1 toque extra.
+  function abrirDetalles(asistente, metodo, folioCapturado = null) {
+    setDuplicado(null)
+    setDetalles({ asistente, metodo, folioCapturado, ...EXTRAS_INICIALES })
+  }
+
   function intentarRegistro(asistente, metodo, folioCapturado = null) {
     if (asistente.checkin_at) {
-      // Duplicado local: avisar, nunca bloquear.
+      // Duplicado local: avisar, nunca bloquear. Si aceptan, se abre el
+      // mismo panel de detalles antes de registrar.
       setDuplicado({ asistente, metodo, folioCapturado })
       return
     }
-    void confirmarRegistro(asistente, metodo, folioCapturado)
+    abrirDetalles(asistente, metodo, folioCapturado)
   }
 
   // QR leído: contenido esperado "PUE1:<FOLIO>:<firma>"; se acepta también un
@@ -152,6 +294,8 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
       const item = await onRegistrar(
         { id: null, nombre, telefono: alta.telefono.trim() || null },
         'alta_sitio',
+        null,
+        extrasDeFormulario(alta),
       )
       setAlta(null)
       setConsulta('')
@@ -213,6 +357,7 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
                   setAlta({
                     nombre: /^\d+$/.test(consulta.trim()) ? '' : consulta.trim(),
                     telefono: '',
+                    ...EXTRAS_INICIALES,
                   })
                 }
                 className="w-full py-4 rounded-2xl bg-brand-dark text-white text-xl font-black active:scale-95 transition shadow"
@@ -280,7 +425,7 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
       {tab === 'escanear' && (
         <section className="px-3 pb-6 space-y-3">
           <Escaner
-            pausado={Boolean(confirmacion || duplicado || alta)}
+            pausado={Boolean(confirmacion || duplicado || alta || detalles)}
             onTexto={manejarTextoQr}
           />
           {errorScan && (
@@ -316,10 +461,52 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
         </button>
       )}
 
+      {/* ---------- Panel de detalles del registro (modal inferior) ---------- */}
+      {detalles && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full max-w-lg p-5 pb-6 border-t-8 border-brand-green max-h-[92vh] overflow-y-auto">
+            <p className="text-2xl font-black text-gray-900 leading-tight">
+              Registrar a {detalles.asistente.nombre}
+            </p>
+            {detalles.asistente.procedencia && (
+              <p className="text-lg text-brand-teal font-bold mt-0.5">{detalles.asistente.procedencia}</p>
+            )}
+            <div className="mt-4">
+              <CamposExtras valor={detalles} onCambiar={setDetalles} />
+            </div>
+            <div className="mt-6 grid gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  void confirmarRegistro(
+                    detalles.asistente,
+                    detalles.metodo,
+                    detalles.folioCapturado,
+                    extrasDeFormulario(detalles),
+                  )
+                }
+                disabled={guardando}
+                className="w-full py-6 rounded-2xl bg-brand-green text-white text-3xl font-black shadow-lg active:scale-95 transition disabled:opacity-60"
+              >
+                REGISTRAR
+              </button>
+              <button
+                type="button"
+                onClick={() => setDetalles(null)}
+                disabled={guardando}
+                className="w-full py-4 rounded-xl bg-gray-100 text-gray-700 text-xl font-bold active:scale-95 transition"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ---------- Alta en sitio (persona fuera del padrón) ---------- */}
       {alta && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-t-8 border-brand-green">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-t-8 border-brand-green max-h-[92vh] overflow-y-auto">
             <p className="text-2xl font-black text-gray-900">Alta en sitio</p>
             <p className="text-lg text-gray-700 mt-1">
               Registra la entrada de una persona que <span className="font-bold">no está en el padrón</span>.
@@ -344,6 +531,7 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
                 placeholder="Teléfono a 10 dígitos (opcional)"
                 className="w-full text-xl p-4 rounded-xl border-2 border-gray-300 focus:border-brand-green focus:outline-none"
               />
+              <CamposExtras valor={alta} onCambiar={setAlta} />
             </div>
             <div className="mt-6 grid gap-3">
               <button
@@ -388,7 +576,7 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
               <button
                 type="button"
                 onClick={() =>
-                  confirmarRegistro(duplicado.asistente, duplicado.metodo, duplicado.folioCapturado)
+                  abrirDetalles(duplicado.asistente, duplicado.metodo, duplicado.folioCapturado)
                 }
                 disabled={guardando}
                 className="w-full py-4 rounded-xl bg-amber-500 text-white text-xl font-black active:scale-95 transition disabled:opacity-60"

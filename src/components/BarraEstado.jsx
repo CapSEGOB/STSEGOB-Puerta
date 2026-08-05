@@ -1,4 +1,4 @@
-import { IconWifi, IconSinWifi, IconSync, IconEngrane } from './Iconos'
+import { IconWifi, IconSinWifi, IconSync, IconEngrane, IconGrafica } from './Iconos'
 
 // Indicador permanente: en línea / sin conexión, pendientes de sincronizar,
 // puerta y operador activos, botón de sincronización manual y acceso a config.
@@ -37,6 +37,15 @@ export default function BarraEstado({ enLinea, pendientes, config, sincronizando
         >
           <IconSync className={`w-5 h-5 ${sincronizando ? 'animate-spin' : ''}`} />
         </button>
+
+        <a
+          href="#/tablero"
+          className="p-2.5 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/30"
+          title="Tablero"
+          aria-label="Tablero"
+        >
+          <IconGrafica className="w-5 h-5" />
+        </a>
 
         <a
           href="#/config"

@@ -3,6 +3,7 @@ import BarraEstado from './components/BarraEstado'
 import PantallaPuerta from './components/PantallaPuerta'
 import PantallaConfig from './components/PantallaConfig'
 import PantallaPase from './components/PantallaPase'
+import Tablero from './components/Tablero'
 import { leerMeta, cargarPadron, contarPendientes, agregarACola, marcarCheckinLocal } from './lib/db'
 import { sincronizar } from './lib/sync'
 import { normalizarTexto } from './lib/normalizar'
@@ -11,9 +12,11 @@ import { normalizarTexto } from './lib/normalizar'
 //   #/           pantalla de puerta
 //   #/p/:folio   pase público (invitados; requiere red)
 //   #/config     configuración del dispositivo
+//   #/tablero    tablero de control (proyector / coordinador; requiere red)
 function rutaActual() {
   const h = window.location.hash || '#/'
   if (h.startsWith('#/p/')) return { nombre: 'pase', folio: decodeURIComponent(h.slice(4)) }
+  if (h.startsWith('#/tablero')) return { nombre: 'tablero' }
   if (h.startsWith('#/config')) return { nombre: 'config' }
   return { nombre: 'puerta' }
 }
@@ -93,7 +96,7 @@ export default function App() {
   // Alta en sitio: asistente.id es null (no está en el padrón); el item lleva
   // {nombre, telefono} y el servidor crea al asistente al sincronizar.
   const registrarCheckin = useCallback(
-    async (asistente, metodo, folioCapturado = null) => {
+    async (asistente, metodo, folioCapturado = null, extras = null) => {
       const item = {
         id_local: crypto.randomUUID(),
         asistente_id: asistente.id ?? null,
@@ -103,6 +106,12 @@ export default function App() {
         dispositivo_id: config?.dispositivo_id || null,
         operador: config?.operador || null,
         timestamp_local: new Date().toISOString(),
+        // Detalles del registro (opcionales; defaults seguros)
+        representante: extras?.representante === true,
+        representante_nombre: extras?.representante_nombre ?? null,
+        acompanantes:
+          Number.isInteger(extras?.acompanantes) && extras.acompanantes > 0 ? extras.acompanantes : 0,
+        acompanantes_nombres: extras?.acompanantes_nombres ?? null,
         ...(metodo === 'alta_sitio'
           ? { nombre: asistente.nombre, telefono: asistente.telefono ?? null }
           : {}),
@@ -163,6 +172,11 @@ export default function App() {
         <p className="text-white/80 text-2xl font-bold animate-pulse">Puerta STSEGOB…</p>
       </div>
     )
+  }
+
+  // Tablero de control: pantalla completa para proyector, sin barra de operador.
+  if (ruta.nombre === 'tablero') {
+    return <Tablero claveConfig={config?.clave || ''} />
   }
 
   const configurada = Boolean(config?.puerta && config?.operador && config?.clave && padronInfo.count > 0)

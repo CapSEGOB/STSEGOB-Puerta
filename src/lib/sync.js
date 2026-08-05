@@ -22,6 +22,11 @@ function aItemRpc(c) {
     dispositivo_id: c.dispositivo_id ?? null,
     operador: c.operador ?? null,
     timestamp_local: c.timestamp_local,
+    // Detalles del registro (contrato nuevo): SIEMPRE presentes, con defaults.
+    representante: c.representante === true,
+    representante_nombre: c.representante_nombre ?? null,
+    acompanantes: Number.isInteger(c.acompanantes) && c.acompanantes > 0 ? c.acompanantes : 0,
+    acompanantes_nombres: c.acompanantes_nombres ?? null,
     ...(c.metodo === 'alta_sitio' ? { nombre: c.nombre ?? null, telefono: c.telefono ?? null } : {}),
   }
 }

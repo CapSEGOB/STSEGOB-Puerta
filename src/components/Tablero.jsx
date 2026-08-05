@@ -57,7 +57,13 @@ export default function Tablero({ claveConfig = '' }) {
     setErrorExporte(null)
     try {
       const { data, error: err } = await supabase.rpc('evento_reporte', { p_clave: clave })
-      if (err) throw new Error('No se pudo obtener el reporte. Revisa el internet e intenta de nuevo.')
+      if (err) {
+        throw new Error(
+          err.code === 'PGRST202'
+            ? 'El servidor aún no tiene la función del reporte: falta aplicar la migración 008 en Supabase.'
+            : 'No se pudo obtener el reporte. Revisa el internet e intenta de nuevo.',
+        )
+      }
       if (!data?.ok) {
         throw new Error(
           data?.error === 'clave_invalida'

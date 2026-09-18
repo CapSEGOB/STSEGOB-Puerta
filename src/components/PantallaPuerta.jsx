@@ -22,16 +22,17 @@ function TarjetaAsistente({ asistente, onRegistrar }) {
   return (
     <div className="bg-white rounded-2xl shadow border border-gray-100 p-4 flex items-center gap-3">
       <div className="flex-1 min-w-0">
-        <p className="text-xl font-bold text-gray-900 leading-tight">{asistente.nombre}</p>
-        <p className="text-gray-500 font-medium mt-0.5">
-          Tel. •••• {asistente.tel_last4 || '— — — —'} · Folio {asistente.folio}
-        </p>
-        <div className="flex flex-wrap gap-1.5 mt-1.5">
-          {asistente.procedencia && (
-            <span className="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-brand-teal border border-slate-200 text-sm font-bold">
-              {asistente.procedencia}
-            </span>
-          )}
+        <p className="text-lg font-bold text-gray-900 leading-tight">{asistente.nombre}</p>
+        {/* Procedencia como subtítulo (texto corrido, sin burbuja): las
+            instituciones largas se leen completas sin robar espacio. */}
+        {asistente.procedencia && (
+          <p className="text-brand-teal font-semibold leading-snug mt-1">{asistente.procedencia}</p>
+        )}
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 mt-2">
+          <span className="text-sm text-gray-400 font-medium tabular-nums">
+            Folio {asistente.folio}
+            {asistente.tel_last4 ? ` · Tel. •••• ${asistente.tel_last4}` : ''}
+          </span>
           {ya ? (
             <span className="inline-block px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-sm font-bold">
               Registrado {horaCorta(asistente.checkin_at)}
@@ -346,8 +347,7 @@ export default function PantallaPuerta({ padron, onRegistrar }) {
             <p className="text-gray-500 text-lg px-1">
               Escribe el <span className="font-bold">nombre</span>, la{' '}
               <span className="font-bold">procedencia</span> (municipio, secretaría…) o los{' '}
-              <span className="font-bold">4 últimos dígitos</span> del teléfono. Puedes combinar:
-              "roque chicon".
+              <span className="font-bold">4 últimos dígitos</span> del teléfono.
             </p>
           )}
           {consulta.trim() && resultados.length === 0 && (

@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'Puerta STSEGOB',
         short_name: 'Puerta',
-        description: 'Control de acceso en puerta — Evento 6 de agosto',
+        description: 'Control de acceso en puerta de eventos — STSEGOB',
         lang: 'es-MX',
         start_url: '/',
         scope: '/',
